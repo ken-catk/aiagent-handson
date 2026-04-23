@@ -37,6 +37,73 @@ aiagent-handson/
 
 この段階では **MCP ツールとは接続しません**。LLM との単純な1往復のみ。
 
+## 構成図
+
+Step 5 は **aiagent コンテナが初めて動き出す** ステップ。
+ただしまだ MCP とは接続されておらず、Agent は OpenAI Responses API だけと話す。
+追加・新規分は ★new で示す。
+
+```mermaid
+flowchart LR
+    USER["開発者<br/>docker compose run --rm agent"]
+
+    subgraph Host["ホスト（リポジトリルート）"]
+        ENV[".env<br/>OPENAI_API_KEY / MODEL / グルメAPI..."]
+        AGENT_LOGS["logs/agent-*.jsonl ★new"]
+        MCP_LOGS["logs/mcp-*.jsonl"]
+        RESOURCE["mcp/resources/<br/>gourmet-api.html"]
+    end
+
+    subgraph AGENTC["aiagent コンテナ（Node 24） ★new"]
+        INDEX["index.ts<br/>CLI 入口 ★new"]
+        LLM["llm.ts<br/>Responses API ラッパ ★new"]
+        A_LOG["logger.ts<br/>agent 用 JSONL ロガー ★new"]
+    end
+
+    subgraph MCPC["mcp コンテナ（Step 4 完了状態・この Step では呼ばれない）"]
+        MCP_BOX["server.ts / tools.ts / gourmet.ts<br/>logger.ts / resources /<br/>search_shops / get_shop_detail"]
+    end
+
+    OPENAI["OpenAI Responses API<br/>外部サービス ★new"]
+    EXT["グルメ検索API<br/>外部サービス"]
+
+    USER --> INDEX
+    INDEX -->|callLLM| LLM
+    INDEX -->|log input / final| A_LOG
+    LLM -->|responses.create| OPENAI
+    LLM -->|log llm_request/response| A_LOG
+    A_LOG -->|append| AGENT_LOGS
+    A_LOG -->|console.error| USER
+
+    MCP_BOX -->|fetch（未使用）| EXT
+    MCP_BOX -->|JSONL（未使用）| MCP_LOGS
+
+    ENV -.->|env_file| AGENTC
+    ENV -.->|env_file| MCPC
+```
+
+### Step 4 からの差分
+
+| 追加/変更点 | ファイル | 役割 |
+|---|---|---|
+| Agent コンテナが初起動 | `docker-compose.yml`（既存） | Step 1 から定義されていた agent サービスがこの Step で初めて使われる |
+| CLI 入口 | `aiagent/src/index.ts` ★new | `argv` からプロンプトを受け取り、`callLLM` を呼んで stdout へ |
+| Responses API ラッパ | `aiagent/src/llm.ts` ★new | `openai` v6 の `responses.create` を薄くラップ、`content_preview` で抜粋ログ |
+| Agent 用ロガー | `aiagent/src/logger.ts` ★new | `source: "agent"` 固定、`logs/agent-*.jsonl` に出力、REDACT は MCP 側と同じ |
+| 依存追加 | `aiagent/package.json` | `openai ^6.34.0`・`zod ^4.3.6` |
+
+### 押さえておきたい 3 点
+
+1. **この Step では Agent と MCP は繋がっていない**。
+   Agent は OpenAI とだけ話すので、店舗名などを聞くと **ハルシネーション** を起こす可能性がある
+   （LLM の訓練知識だけで回答するため）。根拠ある回答になるのは Step 6 から。
+2. **`docker compose run --rm agent` 時に MCP コンテナも起動する**
+   （`depends_on: mcp` のため）が、Agent は MCP を呼ばないので **mcp-\*.jsonl は増えない**。
+   Terminal B で `logs/*.jsonl` を tail すると agent 側 4 phase だけが流れる。
+3. **`logger.ts` は MCP 側と意図的に同形**。`source` タグとファイル名だけ変えてあるので、
+   両コンテナのログを 1 つの `tail -F logs/*.jsonl` で混ぜて眺めても
+   どちらの発生源かが `source` フィールドで判別できる。
+
 ## 完了条件
 
 - `docker compose run --rm agent npm run dev -- "<プロンプト>"` で LLM の応答が標準出力に返る
