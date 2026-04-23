@@ -170,7 +170,7 @@ export async function searchShops(
   if (params.keyword) qs.set("keyword", params.keyword);
   if (params.budget) qs.set("budget", params.budget);
 
-  const url = `${API_URL}?${qs.toString()}`;
+  const url = `${getApiUrl()}?${qs.toString()}`;
   // logger が REDACT するが、念のためここでも置換しておく
   log("gourmet_api_request", { url: url.replace(apiKey, "[REDACTED]") });
 
@@ -237,12 +237,12 @@ export const SEARCH_SHOPS_TOOL: Tool = {
     properties: {
       keyword: {
         type: "string",
-        description: "検索キーワード。例: "鶏", "刺身", "居酒屋"",
+        description: "検索キーワード。例: 「鶏」「刺身」「居酒屋」",
       },
       budget: {
         type: "string",
         description:
-          "グルメ 予算コード。例: "B002"=2001〜3000円, "B003"=3001〜4000円",
+          "グルメ 予算コード。例: 「B002」=2001〜3000円, 「B003」=3001〜4000円",
       },
       count: {
         type: "number",
