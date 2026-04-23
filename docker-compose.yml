@@ -1,0 +1,23 @@
+services:
+  mcp:
+    build:
+      context: ./mcp
+    working_dir: /app
+    volumes:
+      - ./mcp:/app
+      - /app/node_modules
+    env_file:
+      - .env
+
+  agent:
+    build:
+      context: ./aiagent
+    working_dir: /app
+    volumes:
+      - ./aiagent:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    depends_on:
+      - mcp

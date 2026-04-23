@@ -1,0 +1,13 @@
+{
+  "name": "aiagent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "会食ムキムキ君 AI Agent",
+  "scripts": {
+    "dev": "node src/index.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
