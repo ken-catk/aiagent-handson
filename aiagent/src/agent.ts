@@ -15,6 +15,15 @@ import { getModelName, getOpenAIClient } from "./llm.ts";
 import { log } from "./logger.ts";
 import { connectMcpClient } from "./mcp-client.ts";
 
+// ─────────────────────────────────────────────────────────────────────
+// アブレーション実験B: MCP Resource 参照削減
+// ─────────────────────────────────────────────────────────────────────
+// 通常モード: ./resource-loader.ts を import（リソースを読み、system prompt に注入）
+// アブレーション: 下の行をコメントアウトし、./resource-loader-ablation.ts を有効化
+// （元に戻すには: git checkout -- aiagent/src/agent.ts）
+import { loadResourceInstructions } from "./resource-loader.ts";
+// import { loadResourceInstructions } from "./resource-loader-ablation.ts";
+
 const MAX_TURNS = 4;
 
 const SYSTEM_PROMPT = `あなたは「会食ムキムキ君」という AI アシスタントです。
@@ -104,10 +113,16 @@ export async function runAgent(userInput: string): Promise<string> {
       tool_names: toolsList.tools.map((t) => t.name),
     });
 
+    // アブレーション実験B: import を resource-loader-ablation.ts に切替えるとスキップ版が走る
+    const referenceBlock = await loadResourceInstructions(mcp);
+    const instructions = referenceBlock
+      ? `${SYSTEM_PROMPT}\n\n${referenceBlock}`
+      : SYSTEM_PROMPT;
+
     log("llm_request", { turn: 1, model, input_length: userInput.length });
     let response = await client.responses.create({
       model,
-      instructions: SYSTEM_PROMPT,
+      instructions,
       input: userInput,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: tools as any,
