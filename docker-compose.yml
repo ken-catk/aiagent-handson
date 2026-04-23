@@ -6,6 +6,7 @@ services:
     volumes:
       - ./mcp:/app
       - /app/node_modules
+      - ./logs:/app/logs
     env_file:
       - .env
 
