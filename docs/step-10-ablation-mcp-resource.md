@@ -12,7 +12,7 @@
 ### Step 10 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── ... (Step 9 完了状態のまま)
 └── aiagent/
     └── src/
@@ -70,7 +70,7 @@ system prompt に注入すると、LLM のツール引数組み立て精度が�
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `aiagent/src/resource-loader.ts` を新規作成（通常版）
@@ -409,10 +409,10 @@ git checkout -- aiagent/src/agent.ts
 **実験中の import 切替はコミットしません**。実装・手順書の変更だけをコミット:
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/aiagent/src/resource-loader.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/resource-loader-ablation.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/agent.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/logger.ts
+git add aiagent/src/resource-loader.ts \
+        aiagent/src/resource-loader-ablation.ts \
+        aiagent/src/agent.ts \
+        aiagent/src/logger.ts
 
 git commit -m "feat: アブレーション実験B用の resource-loader 2 モジュール + agent.ts import 切替構造"
 ```
@@ -450,7 +450,7 @@ docker compose run --rm agent npm run dev -- "沖縄で予算4000円で鶏料理
 **戻す**:
 
 ```bash
-git checkout -- learn-aiagent/aiagent-and-mcp/aiagent/src/agent.ts
+git checkout -- aiagent/src/agent.ts
 ```
 
 2回の `tool_call.args` を見比べて、特に `budget` パラメータの値が違うかに注目すると

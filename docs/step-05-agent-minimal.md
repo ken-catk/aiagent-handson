@@ -8,7 +8,7 @@
 ### Step 5 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -59,7 +59,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `aiagent/src/` ディレクトリを作成
@@ -354,7 +354,7 @@ docker compose run --rm agent npm run dev -- "こんにちは。あなたは誰�
 別タブで:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 # Agent ログのみ
 tail -F logs/agent-*.jsonl 2>/dev/null
 # MCP + Agent 両方
@@ -414,10 +414,10 @@ Step 5 段階では **Agent 側の4 phase だけ**が流れます。MCP は呼�
 ### 実装コミット（feat）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/aiagent/package.json \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/index.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/llm.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/logger.ts
+git add aiagent/package.json \
+        aiagent/src/index.ts \
+        aiagent/src/llm.ts \
+        aiagent/src/logger.ts
 
 git commit -m "feat: Step5 Agent最小（OpenAI Responses API疎通）"
 ```
@@ -425,8 +425,8 @@ git commit -m "feat: Step5 Agent最小（OpenAI Responses API疎通）"
 ### 手順書コミット（docs）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-05-agent-minimal.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-05-agent-minimal.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step5 手順書追加"
 ```
@@ -446,7 +446,7 @@ git commit -m "docs: Step5 手順書追加"
 **Terminal B**（別タブ）:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/agent-*.jsonl 2>/dev/null
 ```
 

@@ -8,7 +8,7 @@
 ### Step 1 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env                      既存（APIキー、gitignore）
 ├── .env.example              既存
 ├── .gitignore                ← 新規（このStep）
@@ -52,7 +52,7 @@ learn-aiagent/aiagent-and-mcp/
 - Docker Desktop インストール済み（`docker --version` で応答がある）
 - mise インストール済み（Node バージョン切替用）
 - リポジトリルートに `.mise.toml` が既に存在し、`node = "24.15.0"` が指定されている
-- `learn-aiagent/aiagent-and-mcp/.env` と `.env.example` が既に存在する（APIキー投入済み）
+- `.env` と `.env.example` が既に存在する（APIキー投入済み）
 
 未整備の場合はこのStepを始める前に整えてください。
 
@@ -63,7 +63,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 以降のコマンドはすべてこのディレクトリを基点に実行します。
@@ -317,7 +317,7 @@ v24.15.0
 ### 準備しておくこと
 
 - エディタとは別に**2つのターミナルタブ**を開けるようにしておく
-- 1つは `cd learn-aiagent/aiagent-and-mcp/` に入った状態に
+- 1つは `cd aiagent-handson/` に入った状態に
 - もう1つは `logs/` を `ls` で確認できる状態に
 
 Step 2 で `logger.ts` 経由のファイル出力が始まり、`tail -f logs/mcp-*.jsonl` が有効になります。
@@ -362,14 +362,14 @@ Step 2 で `logger.ts` 経由のファイル出力が始まり、`tail -f logs/m
 ## コミット
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/.gitignore \
-        learn-aiagent/aiagent-and-mcp/docker-compose.yml \
-        learn-aiagent/aiagent-and-mcp/mcp/Dockerfile \
-        learn-aiagent/aiagent-and-mcp/mcp/package.json \
-        learn-aiagent/aiagent-and-mcp/mcp/tsconfig.json \
-        learn-aiagent/aiagent-and-mcp/aiagent/Dockerfile \
-        learn-aiagent/aiagent-and-mcp/aiagent/package.json \
-        learn-aiagent/aiagent-and-mcp/aiagent/tsconfig.json
+git add .gitignore \
+        docker-compose.yml \
+        mcp/Dockerfile \
+        mcp/package.json \
+        mcp/tsconfig.json \
+        aiagent/Dockerfile \
+        aiagent/package.json \
+        aiagent/tsconfig.json
 
 git commit -m "feat: Step1 土台作成 - Docker Compose + package/tsconfig 骨組み"
 ```
