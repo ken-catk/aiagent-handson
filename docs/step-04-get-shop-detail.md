@@ -87,7 +87,7 @@ export async function getShopDetail(
     id,
   });
 
-  const url = `${API_URL}?${qs.toString()}`;
+  const url = `${getApiUrl()}?${qs.toString()}`;
   log("gourmet_api_request", {
     url: url.replace(apiKey, "[REDACTED]"),
     purpose: "detail",
@@ -157,7 +157,7 @@ export const GET_SHOP_DETAIL_TOOL: Tool = {
     properties: {
       id: {
         type: "string",
-        description: "グルメ の店舗ID（例: "J000000000"）",
+        description: "グルメ の店舗ID（例: 「J000000000」）",
       },
     },
     required: ["id"],
@@ -170,115 +170,83 @@ EOF
 - `required: ["id"]` で必須を明示。LLM が省略できない
 - description に「search_shops の結果から取った ID を使う」ことを明記し、2ツールの**連携パターン**を示す
 
-### 4. `mcp/src/server.ts` を書き直す
+### 4. `mcp/src/server.ts` に get_shop_detail 分岐を追加
 
-server.ts は全体を差し替えます:
+Step 3 で作った server.ts に **追記** します（ListResources / ReadResource は
+そのまま残すため、全体差し替えではなく差分追加の手順で更新します）。
 
-```bash
-cat > mcp/src/server.ts << 'EOF'
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+**4-1. import を 2 行差し替え**
+
+```typescript
+// before（Step 3）
+import { SEARCH_SHOPS_TOOL } from "./tools.ts";
+import { searchShops, type SearchShopsParams } from "./gourmet.ts";
+
+// after（Step 4）
 import { GET_SHOP_DETAIL_TOOL, SEARCH_SHOPS_TOOL } from "./tools.ts";
 import {
   getShopDetail,
   searchShops,
   type SearchShopsParams,
 } from "./gourmet.ts";
-import { log } from "./logger.ts";
+```
 
-async function main() {
-  const server = new Server(
-    { name: "kaishoku-mukimuki-mcp", version: "0.1.0" },
-    { capabilities: { tools: {} } }
-  );
+**4-2. ListTools の `count` と返却ツールを 2 つに更新**
 
-  // ツール一覧。Step 4 で search_shops と get_shop_detail の2つ
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    log("list_tools", { count: 2 });
-    return { tools: [SEARCH_SHOPS_TOOL, GET_SHOP_DETAIL_TOOL] };
-  });
+```typescript
+// before（Step 3）
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  log("list_tools", { count: 1 });
+  return { tools: [SEARCH_SHOPS_TOOL] };
+});
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
-    log("call_tool_received", { name, args });
+// after（Step 4）
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  log("list_tools", { count: 2 });
+  return { tools: [SEARCH_SHOPS_TOOL, GET_SHOP_DETAIL_TOOL] };
+});
+```
 
-    if (name === "search_shops") {
-      try {
-        const params = (args ?? {}) as SearchShopsParams;
-        const shops = await searchShops(params);
-        log("call_tool_done", { name, count: shops.length });
-        return {
-          content: [
-            { type: "text", text: JSON.stringify(shops, null, 2) },
-          ],
-        };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        log("call_tool_error", { name, message });
-        return {
-          content: [{ type: "text", text: `Error: ${message}` }],
-          isError: true,
-        };
-      }
+**4-3. CallTool に `get_shop_detail` 分岐を追加**
+
+`if (name === "search_shops") { ... }` のブロック直後、`log("call_tool_unknown", ...)`
+の直前に以下を追記します。
+
+```typescript
+if (name === "get_shop_detail") {
+  try {
+    const id = String((args as { id?: unknown })?.id ?? "");
+    if (!id) {
+      throw new Error("id is required");
     }
-
-    if (name === "get_shop_detail") {
-      try {
-        const id = String((args as { id?: unknown })?.id ?? "");
-        if (!id) {
-          throw new Error("id is required");
-        }
-        const shop = await getShopDetail(id);
-        log("call_tool_done", { name, found: shop !== null });
-        return {
-          content: [
-            {
-              type: "text",
-              text: shop
-                ? JSON.stringify(shop, null, 2)
-                : "Shop not found",
-            },
-          ],
-          isError: shop === null,
-        };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        log("call_tool_error", { name, message });
-        return {
-          content: [{ type: "text", text: `Error: ${message}` }],
-          isError: true,
-        };
-      }
-    }
-
-    log("call_tool_unknown", { name });
+    const shop = await getShopDetail(id);
+    log("call_tool_done", { name, found: shop !== null });
     return {
       content: [
-        { type: "text", text: `Not Implemented: ${name}` },
+        {
+          type: "text",
+          text: shop ? JSON.stringify(shop, null, 2) : "Shop not found",
+        },
       ],
+      isError: shop === null,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    log("call_tool_error", { name, message });
+    return {
+      content: [{ type: "text", text: `Error: ${message}` }],
       isError: true,
     };
-  });
-
-  await server.connect(new StdioServerTransport());
-  log("server_started", { transport: "stdio" });
+  }
 }
-
-main().catch((err) => {
-  log("fatal", { message: err instanceof Error ? err.message : String(err) });
-  process.exit(1);
-});
-EOF
 ```
 
 **ポイント**:
 - **ツール追加は分岐を足すだけ**。search_shops と同じパターンで get_shop_detail を追加
 - Shop not found は `isError: true` で返す。「呼び出しは成功したが業務的に見つからなかった」を表現
 - ListTools の `count` を 2 に更新（ログで確認用）
+- ListResources / ReadResource のハンドラや `capabilities.resources` は **Step 3 のまま残す**
+  （この手順書では server.ts を丸ごと書き換えないので、そのまま維持される）
 
 ### 5. `mcp/src/check.ts` を書き直す
 
