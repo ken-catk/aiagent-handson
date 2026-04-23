@@ -130,7 +130,7 @@ Step 6 以降は「**LLMがどのタイミングで MCP の何を呼んだか**�
 ## ディレクトリ構成（完成時）
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── prd-kaishoku-mukimuki-v1.md    PRD（業務要件）
 ├── dev-plan-v2.md                 開発計画（最新）
 ├── procedure-docs/                手順書（各Step）
@@ -245,7 +245,7 @@ docker compose run --rm agent npm run dev -- "<プロンプト>"
 戻し:
 
 ```bash
-git checkout -- learn-aiagent/aiagent-and-mcp/mcp/src/server.ts
+git checkout -- mcp/src/server.ts
 ```
 
 観察点: LLM が呼ぶ `tool_call.args` の質、ターン数、filter後件数、応答の冗長さ。
@@ -268,7 +268,7 @@ import { loadResourceInstructions } from "./resource-loader-ablation.ts";
 
 ```bash
 docker compose run --rm agent npm run dev -- "<プロンプト>"
-git checkout -- learn-aiagent/aiagent-and-mcp/aiagent/src/agent.ts
+git checkout -- aiagent/src/agent.ts
 ```
 
 観察点: `budget:"安い"` のような不正引数の発生、`service_area` を勝手に指定してくるか、
@@ -283,8 +283,8 @@ MAX_TURNS 超過率、ヒット件数。
 docker compose run --rm agent npm run dev -- "<プロンプト>"
 
 # 両方戻す
-git checkout -- learn-aiagent/aiagent-and-mcp/mcp/src/server.ts \
-                learn-aiagent/aiagent-and-mcp/aiagent/src/agent.ts
+git checkout -- mcp/src/server.ts \
+                aiagent/src/agent.ts
 ```
 
 ### ログでの見分け方

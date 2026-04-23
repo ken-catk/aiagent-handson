@@ -7,7 +7,7 @@
 ### Step 3 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -63,7 +63,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. グルメ検索API リファレンス HTML を配置
@@ -571,7 +571,7 @@ Step 2 の `server_started` / `call_tool_unknown` / `fatal` に加えて:
 **生JSON版**:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -f logs/mcp-*.jsonl
 ```
 
@@ -651,11 +651,11 @@ Terminal A で `docker compose run --rm mcp npm run check` を実行した瞬間
 ### 実装コミット
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/mcp/package.json \
-        learn-aiagent/aiagent-and-mcp/mcp/src/server.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/gourmet.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/tools.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/check.ts
+git add mcp/package.json \
+        mcp/src/server.ts \
+        mcp/src/gourmet.ts \
+        mcp/src/tools.ts \
+        mcp/src/check.ts
 
 git commit -m "feat: Step3 グルメラッパと search_shops ツール追加"
 ```
@@ -663,8 +663,8 @@ git commit -m "feat: Step3 グルメラッパと search_shops ツール追加"
 ### 手順書コミット
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-03-search-shops.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-03-search-shops.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step3 手順書追加"
 ```
@@ -684,7 +684,7 @@ git commit -m "docs: Step3 手順書追加"
 **Terminal B**（別タブ）:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 # 生JSON でも見やすい
 tail -F logs/mcp-*.jsonl 2>/dev/null
 # jq が入っていれば整形版

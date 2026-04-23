@@ -9,7 +9,7 @@
 ### Step 6 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -62,7 +62,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `aiagent/package.json` に MCP SDK を追加
@@ -517,7 +517,7 @@ MCP 側のログ（`mcp-*.jsonl`）もこの間に自然に混ざって出ます
 ### Terminal B で実行するコマンド
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 # Agent + MCP 両方見る
 tail -F logs/*.jsonl 2>/dev/null
 # jq 整形版（source別に色分けイメージ）
@@ -629,12 +629,12 @@ LLM の判断にはまだ**ブレ**があります:
 ### 実装コミット（feat）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/aiagent/package.json \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/index.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/llm.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/agent.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/mcp-client.ts \
-        learn-aiagent/aiagent-and-mcp/docker-compose.yml
+git add aiagent/package.json \
+        aiagent/src/index.ts \
+        aiagent/src/llm.ts \
+        aiagent/src/agent.ts \
+        aiagent/src/mcp-client.ts \
+        docker-compose.yml
 
 git commit -m "feat: Step6 Agent-MCP tool callingループ連携"
 ```
@@ -642,8 +642,8 @@ git commit -m "feat: Step6 Agent-MCP tool callingループ連携"
 ### 手順書コミット（docs）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-06-tool-loop.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-06-tool-loop.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step6 手順書追加"
 ```
@@ -664,7 +664,7 @@ git commit -m "docs: Step6 手順書追加"
 **Terminal B**（別タブ）:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/*.jsonl 2>/dev/null
 ```
 

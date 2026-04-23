@@ -13,7 +13,7 @@
 ### Step 9 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── ... (Step 8 完了状態のまま)
 └── mcp/
     └── src/
@@ -67,7 +67,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. 曖昧版ツール定義ファイルを作成
@@ -222,7 +222,7 @@ git checkout -- mcp/src/server.ts
 別タブで起動:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/*.jsonl 2>/dev/null | jq -c 'select(.phase=="list_tools" or .phase=="tool_call" or .phase=="filter_applied" or .phase=="agent_done")'
 ```
 
@@ -329,8 +329,8 @@ git checkout -- mcp/src/server.ts
 **実験中の import 切替はコミットしません**。実装・手順書の変更だけをコミット:
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/mcp/src/tools-ablation-desc.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/server.ts
+git add mcp/src/tools-ablation-desc.ts \
+        mcp/src/server.ts
 
 git commit -m "feat: アブレーション実験A用の曖昧版ツール定義と import 切替構造"
 ```
@@ -371,7 +371,7 @@ docker compose run --rm agent npm run dev -- "沖縄で刺身が美味しい店�
 **戻す**:
 
 ```bash
-git checkout -- learn-aiagent/aiagent-and-mcp/mcp/src/server.ts
+git checkout -- mcp/src/server.ts
 ```
 
 2回の結果を見比べて、`tool_call.args` の質・ターン数・filter 結果の具体的な数値差を
