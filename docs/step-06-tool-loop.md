@@ -40,6 +40,105 @@ aiagent-handson/
 - `aiagent/src/index.ts`: `runAgent(userInput)` を呼ぶ形に
 - `docker-compose.yml`: agent サービスに `./mcp:/app/mcp:ro` マウント追加
 
+## 構成図
+
+Step 6 は **Agent と MCP が初めて繋がる** ステップ。重要なのは、
+MCP は別コンテナではなく **agent コンテナ内で stdio サブプロセスとして spawn** される点。
+`./mcp:/app/mcp:ro` マウントにより agent の Node が MCP ソースと `node_modules` の両方を解決できる。
+追加・新規分は ★new で示す。
+
+```mermaid
+flowchart LR
+    USER["開発者<br/>docker compose run --rm agent"]
+
+    subgraph Host["ホスト（リポジトリルート）"]
+        ENV[".env"]
+        AGENT_LOGS["logs/agent-*.jsonl"]
+        MCP_LOGS["logs/mcp-*.jsonl"]
+        RESOURCE["mcp/resources/<br/>gourmet-api.html"]
+    end
+
+    subgraph AGENTC["aiagent コンテナ（Node 24）"]
+        INDEX["index.ts<br/>CLI入口（runAgent 呼出に変更）"]
+        AGENT["agent.ts<br/>tool calling ループ ★new"]
+        MCPCLIENT["mcp-client.ts<br/>MCP を spawn ★new"]
+        LLM["llm.ts<br/>getOpenAIClient / getModelName<br/>（Step 5 の callLLM は削除）"]
+        A_LOG["logger.ts"]
+        subgraph MCPSUB["MCP subprocess（agent が spawn） ★new"]
+            SERVER["/app/mcp/src/server.ts"]
+            MCP_INNER["tools.ts / gourmet.ts / logger.ts<br/>search_shops / get_shop_detail"]
+        end
+    end
+
+    OPENAI["OpenAI Responses API"]
+    EXT["グルメ検索API"]
+
+    USER --> INDEX
+    INDEX -->|runAgent| AGENT
+    AGENT -->|getOpenAIClient / getModelName| LLM
+    AGENT -->|connectMcpClient| MCPCLIENT
+    MCPCLIENT -->|stdio spawn| SERVER
+    AGENT -->|responses.create<br/>tools + previous_response_id| OPENAI
+    AGENT -->|callTool / listTools| SERVER
+    SERVER --> MCP_INNER
+    MCP_INNER -->|fetch| EXT
+    SERVER -->|readFile| RESOURCE
+    AGENT -->|log phase| A_LOG
+    MCPCLIENT -->|log phase| A_LOG
+    A_LOG -->|append| AGENT_LOGS
+    MCPSUB -->|append| MCP_LOGS
+    ENV -.->|env_file| AGENTC
+```
+
+### tool calling ループのシーケンス
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as ユーザー
+    participant A as agent.ts
+    participant O as OpenAI Responses API
+    participant M as MCP subprocess
+    participant G as グルメ検索API
+
+    U->>A: runAgent(プロンプト)
+    A->>M: spawn (stdio) + listTools
+    M-->>A: [search_shops, get_shop_detail]
+    A->>O: responses.create(input, tools)
+    O-->>A: output に function_call
+    A->>M: callTool(search_shops, args)
+    M->>G: fetch
+    G-->>M: shops JSON
+    M-->>A: content (text)
+    A->>O: responses.create<br/>previous_response_id + function_call_output
+    O-->>A: output = 最終メッセージ
+    A-->>U: 自然文の最終回答
+    A->>M: close (subprocess 終了)
+```
+
+### Step 5 からの差分
+
+| 追加/変更点 | ファイル | 役割 |
+|---|---|---|
+| tool calling ループ | `aiagent/src/agent.ts` ★new | `function_call` → MCP 実行 → `function_call_output` の往復、`MAX_TURNS=4` |
+| MCP spawn ヘルパ | `aiagent/src/mcp-client.ts` ★new | `StdioClientTransport` で `/app/mcp/src/server.ts` を子プロセス起動 |
+| llm.ts 軽量化 | `aiagent/src/llm.ts` | `callLLM` を削除し `getOpenAIClient` / `getModelName` に |
+| エントリ差替 | `aiagent/src/index.ts` | `runAgent(userInput)` を呼ぶ形に |
+| MCP ソース共有 | `docker-compose.yml` | agent サービスに `./mcp:/app/mcp:ro` マウント追加 |
+| MCP SDK 依存 | `aiagent/package.json` | `@modelcontextprotocol/sdk` を追加（Client 側） |
+
+### 押さえておきたい 4 点
+
+1. **MCP は subprocess として agent コンテナ内で動く**。docker-compose の `mcp` サービス
+   （`depends_on` で起動するもの）はこの Step では実質使われない。stdio サブプロセス
+   パターンに切り替わっている。
+2. **`/app/mcp/src/server.ts` の置き場所が重要**。`/mcp` 直下に置くと Node の ESM 解決が
+   `/app/node_modules` まで到達しない。`NODE_PATH` は ESM では無視されるので、配置で解決する。
+3. **Responses API は `previous_response_id` で会話状態を OpenAI に預ける**。
+   Chat Completions API のように `messages[]` を自分で積む必要はない。
+4. **`MAX_TURNS=4` は暴走保険**。LLM が毎ターン tool を呼び続けるような壊れ方をしても
+   コストが無限に膨らまないようにする。本番では 10〜20 が現実的。
+
 ## 完了条件
 
 - `docker compose run --rm agent npm run dev -- "<質問>"` で **AgentがMCPツールを呼び出して、実在の店舗情報を含む回答を返す**
