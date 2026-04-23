@@ -7,7 +7,7 @@
 ### Step 4 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -63,7 +63,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `mcp/src/gourmet.ts` に `getShopDetail` を追加
@@ -451,7 +451,7 @@ Step 3 の phase に加え、以下のバリエーションが出ます:
 ### Terminal B で実行するコマンド
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/mcp-*.jsonl 2>/dev/null
 # jq 整形版:
 # tail -F logs/mcp-*.jsonl 2>/dev/null | jq -r '"\(.ts) [\(.phase)] \(. | del(.ts, .source, .phase) | tostring)"'
@@ -506,10 +506,10 @@ tail -F logs/mcp-*.jsonl 2>/dev/null
 ### 実装コミット（feat）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/mcp/src/gourmet.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/tools.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/server.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/check.ts
+git add mcp/src/gourmet.ts \
+        mcp/src/tools.ts \
+        mcp/src/server.ts \
+        mcp/src/check.ts
 
 git commit -m "feat: Step4 get_shop_detail ツール追加"
 ```
@@ -517,8 +517,8 @@ git commit -m "feat: Step4 get_shop_detail ツール追加"
 ### 手順書コミット（docs）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-04-get-shop-detail.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-04-get-shop-detail.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step4 手順書追加"
 ```
@@ -538,7 +538,7 @@ git commit -m "docs: Step4 手順書追加"
 **Terminal B**:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/mcp-*.jsonl 2>/dev/null
 ```
 

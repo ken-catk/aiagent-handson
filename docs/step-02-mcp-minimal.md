@@ -7,7 +7,7 @@
 ### Step 2 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -54,7 +54,7 @@ learn-aiagent/aiagent-and-mcp/
 ## 前提条件
 
 - Step 1 が完了していること（`docker compose build` が既に1度は通っている状態）
-- 作業ディレクトリは `learn-aiagent/aiagent-and-mcp/`
+- 作業ディレクトリは ``
 
 ---
 
@@ -63,7 +63,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `mcp/src/` ディレクトリを作成
@@ -354,7 +354,7 @@ stderr には JSON 1行が出て、同時に `logs/mcp-<timestamp>.jsonl` にも
 
 ```bash
 # 別タブで実行しておく
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -f logs/mcp-*.jsonl
 ```
 
@@ -427,10 +427,10 @@ Step 3 以降で `list_tools` / `call_tool_received` / `gourmet_api_request` な
 ### 実装コミット（feat）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/docker-compose.yml \
-        learn-aiagent/aiagent-and-mcp/mcp/package.json \
-        learn-aiagent/aiagent-and-mcp/mcp/src/logger.ts \
-        learn-aiagent/aiagent-and-mcp/mcp/src/server.ts
+git add docker-compose.yml \
+        mcp/package.json \
+        mcp/src/logger.ts \
+        mcp/src/server.ts
 
 git commit -m "feat: Step2 MCPサーバー最小起動（stdio + 空ツール）+ ログ基盤"
 ```
@@ -438,8 +438,8 @@ git commit -m "feat: Step2 MCPサーバー最小起動（stdio + 空ツール）
 ### 手順書コミット（docs）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-02-mcp-minimal.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-02-mcp-minimal.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step2 手順書追加"
 ```
@@ -459,7 +459,7 @@ git commit -m "docs: Step2 手順書追加"
 **Terminal B**（別タブで先に開く）:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/mcp-*.jsonl 2>/dev/null
 ```
 
