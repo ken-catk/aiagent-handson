@@ -9,5 +9,9 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "dependencies": {
+    "openai": "^6.34.0",
+    "zod": "^4.3.6"
   }
 }
