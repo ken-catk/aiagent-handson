@@ -241,7 +241,7 @@ import { log } from "./logger.ts";
 async function main() {
   const userInput = process.argv.slice(2).join(" ").trim();
   if (!userInput) {
-    console.error("Usage: npm run dev -- "<prompt>"");
+    console.error('Usage: npm run dev -- "<prompt>"');
     process.exit(1);
   }
 
