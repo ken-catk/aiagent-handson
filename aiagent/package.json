@@ -11,6 +11,7 @@
     "node": ">=24"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "openai": "^6.34.0",
     "zod": "^4.3.6"
   }

@@ -18,6 +18,10 @@ services:
       - ./aiagent:/app
       - /app/node_modules
       - ./logs:/app/logs
+      # Agent が MCP を stdio で spawn できるよう、MCP ソースを read-only で共有。
+      # /app/mcp 配下に置くことで、MCPサブプロセスが @modelcontextprotocol/sdk を
+      # /app/node_modules から Node の標準ESM解決で辿れる
+      - ./mcp:/app/mcp:ro
     env_file:
       - .env
     depends_on:

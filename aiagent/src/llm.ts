@@ -1,15 +1,15 @@
 /**
- * OpenAI Responses API ラッパ
+ * OpenAI クライアントとモデル名のヘルパー
  *
- * Step 5 時点ではツール無しで「プロンプト -> テキスト応答」の単純な往復のみ。
- * Step 6 でツール定義とループを追加する。
+ * Step 6 以降は agent.ts が直接 client.responses.create を呼ぶため、
+ * ここでは「クライアント初期化」と「モデル名取得」だけを担う薄い層にする。
  */
 
 import OpenAI from "openai";
-import { log } from "./logger.ts";
 
 let _client: OpenAI | null = null;
-function getClient(): OpenAI {
+
+export function getOpenAIClient(): OpenAI {
   if (_client) return _client;
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -19,25 +19,6 @@ function getClient(): OpenAI {
   return _client;
 }
 
-/**
- * LLM に自然言語プロンプトを投げてテキスト応答を得る。
- */
-export async function callLLM(input: string): Promise<string> {
-  const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
-  const client = getClient();
-
-  log("llm_request", { model, input_length: input.length });
-
-  const response = await client.responses.create({
-    model,
-    input,
-  });
-
-  const text = response.output_text ?? "";
-  log("llm_response", {
-    content_length: text.length,
-    content_preview: text.slice(0, 200),
-  });
-
-  return text;
+export function getModelName(): string {
+  return process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
 }

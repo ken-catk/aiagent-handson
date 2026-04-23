@@ -4,10 +4,10 @@
  * 使い方:
  *   docker compose run --rm agent npm run dev -- "<プロンプト>"
  *
- * Step 5: LLM との1往復のみ。ツール呼び出しは Step 6 で追加。
+ * Step 6: runAgent() 経由で MCP ツールを使った tool calling ループを実行。
  */
 
-import { callLLM } from "./llm.ts";
+import { runAgent } from "./agent.ts";
 import { log } from "./logger.ts";
 
 async function main() {
@@ -20,7 +20,7 @@ async function main() {
   log("input", { prompt: userInput });
 
   try {
-    const answer = await callLLM(userInput);
+    const answer = await runAgent(userInput);
     console.log(answer);
     log("final", { content_length: answer.length });
   } catch (err) {
