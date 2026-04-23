@@ -41,6 +41,91 @@ aiagent-handson/
 - `aiagent/src/healthy-filter.ts` — 店舗配列を受け取り、カテゴリ判定・スコア付け・5件絞込み・筋トレコメント生成
 - `aiagent/src/agent.ts` 更新 — `search_shops` の結果に filter を挟む、SYSTEM_PROMPT で指示
 
+## 構成図
+
+Step 7 は「**会食ムキムキ君**」としての完成形。
+Step 6 の tool calling ループの **tool_result と function_call_output の間に決定的フィルタ**を
+差し込む形。LLM には **フィルタ済み 5 件以内** の JSON だけが渡るので、応答は必ず
+ヒットキーワードと筋トレコメントを含むようになる。追加・更新分は ★new / ★updated で示す。
+
+```mermaid
+flowchart LR
+    USER["開発者"]
+
+    subgraph Host["ホスト（リポジトリルート）"]
+        ENV[".env"]
+        AGENT_LOGS["logs/agent-*.jsonl"]
+        MCP_LOGS["logs/mcp-*.jsonl"]
+        RESOURCE["mcp/resources/<br/>gourmet-api.html"]
+        CONFIG["aiagent/config/ ★new<br/>healthy_keywords.json<br/>excluded_keywords.json"]
+    end
+
+    subgraph AGENTC["aiagent コンテナ（Node 24）"]
+        INDEX["index.ts"]
+        AGENT["agent.ts<br/>SYSTEM_PROMPT 付与 ★updated<br/>search_shops 結果に filter 挿入 ★updated"]
+        FILTER["healthy-filter.ts ★new<br/>除外 → スコア → 5 件絞込み<br/>筋トレコメントをテンプレート生成"]
+        MCPCLIENT["mcp-client.ts"]
+        LLM["llm.ts"]
+        A_LOG["logger.ts"]
+        subgraph MCPSUB["MCP subprocess（Step 6 と同じ）"]
+            SERVER["server.ts / tools.ts / gourmet.ts<br/>search_shops / get_shop_detail"]
+        end
+    end
+
+    OPENAI["OpenAI Responses API"]
+    EXT["グルメ検索API"]
+
+    USER --> INDEX
+    INDEX -->|runAgent| AGENT
+    AGENT -->|responses.create<br/>instructions=SYSTEM_PROMPT ★updated| OPENAI
+    AGENT -->|callTool| SERVER
+    SERVER -->|fetch| EXT
+    AGENT -->|search_shops 結果に applyHealthyFilter ★new| FILTER
+    FILTER -.->|起動時 readFileSync| CONFIG
+    AGENT -->|filter 済み JSON を<br/>function_call_output| OPENAI
+    AGENT -->|log filter_applied / filter_skipped ★new| A_LOG
+    A_LOG -->|append| AGENT_LOGS
+    MCPSUB -->|append| MCP_LOGS
+    ENV -.->|env_file| AGENTC
+```
+
+### ツール結果処理のどこに filter が入るか
+
+Step 6 は tool_result の文字列をそのまま `function_call_output` として返していた。
+Step 7 では `call.name === "search_shops"` の場合だけ JSON を `applyHealthyFilter` に通し、
+結果を再シリアライズしてから `function_call_output` に入れる。LLM からは
+「search_shops が 5 件以内の健康キーワード付き JSON を返す」ように見える。
+
+```
+tool_result (生の shops JSON)
+    ↓
+  [applyHealthyFilter] ★new  ← 除外 → スコア → 上位5件 → muscle_comment 付与
+    ↓
+function_call_output (filter 済み JSON)
+    ↓
+OpenAI Responses API (最終自然文を生成)
+```
+
+### Step 6 からの差分
+
+| 追加/変更点 | ファイル | 役割 |
+|---|---|---|
+| 健康キーワード辞書 | `aiagent/config/healthy_keywords.json` ★new | `high_protein` / `low_fat_method` / `healthy_pitch` の 3 カテゴリ |
+| 除外キーワード辞書 | `aiagent/config/excluded_keywords.json` ★new | 食べ放題・デカ盛り・こってりを早期除外 |
+| 決定的フィルタ | `aiagent/src/healthy-filter.ts` ★new | 店舗配列を受け取り 5 件絞込み + 筋トレコメント生成（LLM 非依存） |
+| SYSTEM_PROMPT | `aiagent/src/agent.ts` ★updated | 初回 `responses.create` に `instructions` として渡す |
+| filter 挿入 | `aiagent/src/agent.ts` ★updated | `search_shops` の tool_result を `function_call_output` に入れる直前で filter |
+
+### 押さえておきたい 3 点
+
+1. **LLM 判断とコード制御の責務分離**。除外・5 件絞込み・筋トレコメントは**コード側（決定的）**、
+   検索クエリ組み立てと自然文整形は**LLM 側**。再現性が求められる業務要件はコードで保証する。
+2. **`muscle_comment` はテンプレート生成**にしてある。LLM に書かせると毎回微妙に揺れるので、
+   同じ店舗・同じヒット単語なら必ず同じコメントになるように決定的にしている。
+3. **SYSTEM_PROMPT は初回の `responses.create` だけに渡せばよい**。
+   `previous_response_id` を使う 2 回目以降は OpenAI 側が会話状態として保持するので
+   `instructions` を毎回送る必要はない。
+
 ## 完了条件
 
 - `docker compose run --rm agent npm run dev -- "<健康会食の質問>"` で:
