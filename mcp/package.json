@@ -5,7 +5,8 @@
   "type": "module",
   "description": "会食ムキムキ君 グルメ MCP Server",
   "scripts": {
-    "dev": "node src/server.ts"
+    "dev": "node src/server.ts",
+    "check": "node src/check.ts"
   },
   "engines": {
     "node": ">=24"

@@ -24,6 +24,10 @@ const PHASE_DESC: Record<string, string> = {
   call_tool_unknown: "未知のツール名が指定された",
   gourmet_api_request: "グルメ検索API へリクエスト送信",
   gourmet_api_response: "グルメ検索API からレスポンス受信",
+  list_resources: "リソース一覧をクライアントへ応答",
+  read_resource_received: "リソース読み取り要求を受信",
+  read_resource_done: "リソース読み取りが正常完了",
+  read_resource_error: "リソース読み取り中にエラー",
   fatal: "MCPサーバーで致命的エラー",
 };
 
