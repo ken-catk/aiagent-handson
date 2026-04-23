@@ -71,6 +71,38 @@ async function main() {
     );
   }
 
+  // tools/call get_shop_detail（search結果から先頭店の詳細を取得）
+  if (shops.length === 0) {
+    console.error("[check] no shops returned; skipping get_shop_detail");
+    await client.close();
+    return;
+  }
+
+  const firstShopId = shops[0].id;
+  console.log(`[check] calling get_shop_detail (id="${firstShopId}")...`);
+  const detailResult = await client.callTool({
+    name: "get_shop_detail",
+    arguments: { id: firstShopId },
+  });
+
+  const detailContent = detailResult.content as Array<{
+    type: string;
+    text: string;
+  }>;
+  if (detailResult.isError) {
+    console.error("[check] detail ERROR:", detailContent[0]?.text);
+    await client.close();
+    process.exit(1);
+  }
+
+  const shop = JSON.parse(detailContent[0]?.text ?? "null");
+  console.log(`[check] shop detail:`);
+  console.log(`  name:    ${shop.name}`);
+  console.log(`  genre:   ${shop.genre?.name}`);
+  console.log(`  catch:   ${shop.catch}`);
+  console.log(`  address: ${shop.address}`);
+  console.log(`  url:     ${shop.urls?.pc}`);
+
   await client.close();
 }
 

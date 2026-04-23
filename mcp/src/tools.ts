@@ -42,3 +42,36 @@ export const SEARCH_SHOPS_TOOL: Tool = {
     },
   },
 };
+
+/**
+ * get_shop_detail ツール定義
+ *
+ * 店舗IDから単一店舗の詳細情報を取得する。
+ * search_shops の結果から選んだ店の詳しい情報を拾うときに使う。
+ */
+export const GET_SHOP_DETAIL_TOOL: Tool = {
+  name: "get_shop_detail",
+  description: `グルメ の店舗IDから単一店舗の詳細情報を取得する。
+
+【使うタイミング】
+- search_shops で見つけた店舗の詳しい情報を追加で見たい時
+- 会食判定のために追加属性（営業時間、個室有無など）が必要な時
+
+【返却内容】
+- 単一店舗の全属性（店舗名、ジャンル、キャッチ、住所、URL、予算、...）
+- 該当IDが存在しない場合は "Shop not found"
+
+【制約】
+- 1回の呼び出しで1店舗のみ
+- id は必ず search_shops の結果に含まれる shop.id を指定すること`,
+  inputSchema: {
+    type: "object",
+    properties: {
+      id: {
+        type: "string",
+        description: "グルメ の店舗ID（例: 「J000000000」）",
+      },
+    },
+    required: ["id"],
+  },
+};

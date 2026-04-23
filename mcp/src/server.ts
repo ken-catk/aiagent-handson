@@ -8,8 +8,12 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { SEARCH_SHOPS_TOOL } from "./tools.ts";
-import { searchShops, type SearchShopsParams } from "./gourmet.ts";
+import { GET_SHOP_DETAIL_TOOL, SEARCH_SHOPS_TOOL } from "./tools.ts";
+import {
+  getShopDetail,
+  searchShops,
+  type SearchShopsParams,
+} from "./gourmet.ts";
 import { log } from "./logger.ts";
 
 // MCP Resource として公開する グルメ検索API リファレンス
@@ -27,10 +31,10 @@ async function main() {
     { capabilities: { tools: {}, resources: {} } },
   );
 
-  // ツール一覧。現時点は search_shops のみ。Step 4 で get_shop_detail を追加
+  // ツール一覧。Step 4 で search_shops と get_shop_detail の2つ
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    log("list_tools", { count: 1 });
-    return { tools: [SEARCH_SHOPS_TOOL] };
+    log("list_tools", { count: 2 });
+    return { tools: [SEARCH_SHOPS_TOOL, GET_SHOP_DETAIL_TOOL] };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -44,6 +48,33 @@ async function main() {
         log("call_tool_done", { name, count: shops.length });
         return {
           content: [{ type: "text", text: JSON.stringify(shops, null, 2) }],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        log("call_tool_error", { name, message });
+        return {
+          content: [{ type: "text", text: `Error: ${message}` }],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === "get_shop_detail") {
+      try {
+        const id = String((args as { id?: unknown })?.id ?? "");
+        if (!id) {
+          throw new Error("id is required");
+        }
+        const shop = await getShopDetail(id);
+        log("call_tool_done", { name, found: shop !== null });
+        return {
+          content: [
+            {
+              type: "text",
+              text: shop ? JSON.stringify(shop, null, 2) : "Shop not found",
+            },
+          ],
+          isError: shop === null,
         };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

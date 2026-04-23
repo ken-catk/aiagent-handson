@@ -95,3 +95,47 @@ export async function searchShops(
 
   return data.results?.shop ?? [];
 }
+
+export async function getShopDetail(
+  id: string,
+): Promise<GourmetShop | null> {
+  const apiKey = process.env.GOURMET_API_KEY;
+  if (!apiKey) {
+    throw new Error("GOURMET_API_KEY is not set");
+  }
+
+  const qs = new URLSearchParams({
+    key: apiKey,
+    format: "json",
+    id,
+  });
+
+  const url = `${getApiUrl()}?${qs.toString()}`;
+  log("gourmet_api_request", {
+    url: url.replace(apiKey, "[REDACTED]"),
+    purpose: "detail",
+  });
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(
+      `グルメ検索API error: ${res.status} ${await res.text()}`,
+    );
+  }
+
+  const data = (await res.json()) as GourmetResponse;
+
+  if (data.results?.error && data.results.error.length > 0) {
+    const err = data.results.error[0];
+    throw new Error(`グルメ検索API error ${err.code}: ${err.message}`);
+  }
+
+  log("gourmet_api_response", {
+    results_available: data.results?.results_available,
+    results_returned: data.results?.results_returned,
+    purpose: "detail",
+  });
+
+  // id 指定は1件のみ返る前提
+  return data.results?.shop?.[0] ?? null;
+}
