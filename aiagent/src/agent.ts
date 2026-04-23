@@ -10,11 +10,27 @@
  */
 
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { applyHealthyFilter, type GourmetShop } from "./healthy-filter.ts";
 import { getModelName, getOpenAIClient } from "./llm.ts";
 import { log } from "./logger.ts";
 import { connectMcpClient } from "./mcp-client.ts";
 
 const MAX_TURNS = 4;
+
+const SYSTEM_PROMPT = `あなたは「会食ムキムキ君」という AI アシスタントです。
+筋肉づくり・健康維持に配慮した沖縄の会食候補を提案する役割を担います。
+
+ツール search_shops を呼ぶとき、返却結果には以下の追加フィールドが含まれます:
+- hit_keywords: その店舗でヒットした健康キーワードのリスト（必ず回答に含めること）
+- hit_category: 最優先カテゴリ（high_protein / low_fat_method / healthy_pitch）
+- muscle_comment: 筋トレ観点コメント（必ず回答に含めること）
+
+返却ルール:
+- 各候補について、店舗名・住所・ジャンル・予算・URL を記載
+- **ヒットキーワード（hit_keywords）を理由として必ず明記**
+- **筋トレ観点コメント（muscle_comment）を必ず添える**
+- 候補が0件の場合は「条件に一致する健康会食候補なし」と返す
+- 提供された店舗情報の範囲で回答し、事実を創作しない`;
 
 interface McpTool {
   name: string;
@@ -91,6 +107,7 @@ export async function runAgent(userInput: string): Promise<string> {
     log("llm_request", { turn: 1, model, input_length: userInput.length });
     let response = await client.responses.create({
       model,
+      instructions: SYSTEM_PROMPT,
       input: userInput,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: tools as any,
@@ -141,10 +158,31 @@ export async function runAgent(userInput: string): Promise<string> {
           preview: resultText.slice(0, 200),
         });
 
+        // search_shops の結果には健康判定フィルタを適用する（決定的ロジック）
+        let finalOutput = resultText;
+        if (call.name === "search_shops" && !isError) {
+          try {
+            const shops = JSON.parse(resultText) as GourmetShop[];
+            if (Array.isArray(shops)) {
+              const filtered = applyHealthyFilter(shops, 5);
+              finalOutput = JSON.stringify(filtered, null, 2);
+              log("filter_applied", {
+                input_count: shops.length,
+                output_count: filtered.length,
+                hit_categories: filtered.map((s) => s.hit_category),
+              });
+            }
+          } catch (e) {
+            log("filter_skipped", {
+              reason: e instanceof Error ? e.message : String(e),
+            });
+          }
+        }
+
         toolOutputs.push({
           type: "function_call_output",
           call_id: call.call_id,
-          output: resultText,
+          output: finalOutput,
         });
       }
 
