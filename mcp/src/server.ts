@@ -8,7 +8,14 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+// ─────────────────────────────────────────────────────────────────────
+// アブレーション実験A: Tool Description の情報量削減
+// ─────────────────────────────────────────────────────────────────────
+// 通常モード: ./tools.ts を import
+// アブレーション: 下の行をコメントアウトし、./tools-ablation-desc.ts の方を有効化
+// （元に戻すには: git checkout -- mcp/src/server.ts）
 import { GET_SHOP_DETAIL_TOOL, SEARCH_SHOPS_TOOL } from "./tools.ts";
+// import { GET_SHOP_DETAIL_TOOL, SEARCH_SHOPS_TOOL } from "./tools-ablation-desc.ts";
 import {
   getShopDetail,
   searchShops,
@@ -33,7 +40,14 @@ async function main() {
 
   // ツール一覧。Step 4 で search_shops と get_shop_detail の2つ
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    log("list_tools", { count: 2 });
+    log("list_tools", {
+      count: 2,
+      // どの tools モジュールから来た定義かは description の長さで判別可能
+      desc_lengths: [
+        SEARCH_SHOPS_TOOL.description?.length ?? 0,
+        GET_SHOP_DETAIL_TOOL.description?.length ?? 0,
+      ],
+    });
     return { tools: [SEARCH_SHOPS_TOOL, GET_SHOP_DETAIL_TOOL] };
   });
 
