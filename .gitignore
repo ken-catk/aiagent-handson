@@ -1,0 +1,24 @@
+# ログ
+logs/
+*.log
+
+# 依存関係
+**/node_modules/
+
+# ビルド成果物
+**/dist/
+**/*.tsbuildinfo
+
+# 環境変数（ルート .gitignore でも除外されているが、冪等性のため）
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# VSCode 設定は全員で共有したいので、親 .gitignore の除外を打ち消す
+!.vscode/
+!.vscode/**
+
+# MCP Resource として配布する外部 API リファレンス HTML（著作権配慮、Slack 配布運用）
+mcp/resources/*.html
