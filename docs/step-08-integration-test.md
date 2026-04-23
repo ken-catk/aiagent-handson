@@ -9,7 +9,7 @@
 ### Step 8 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -52,7 +52,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `tests/` ディレクトリを作成
@@ -70,7 +70,7 @@ cat > tests/run-normal.sh << 'EOF'
 # 正常系 連携テスト（Step 8）
 #
 # 実行方法:
-#   cd learn-aiagent/aiagent-and-mcp
+#   cd aiagent-handson/
 #   ./tests/run-normal.sh
 #
 # 判定:
@@ -319,7 +319,7 @@ mv tests/run-normal.sh.bak tests/run-normal.sh
 ### 実装コミット（test）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/tests/run-normal.sh
+git add tests/run-normal.sh
 
 git commit -m "test: Step8 連携テスト（正常系）追加"
 ```
@@ -327,8 +327,8 @@ git commit -m "test: Step8 連携テスト（正常系）追加"
 ### 手順書コミット（docs）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-08-integration-test.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-08-integration-test.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step8 手順書追加、全Step完走"
 ```
@@ -346,7 +346,7 @@ git commit -m "docs: Step8 手順書追加、全Step完走"
 ### 1分でできる確認
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ./tests/run-normal.sh
 ```
 

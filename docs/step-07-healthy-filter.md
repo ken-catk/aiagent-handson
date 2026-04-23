@@ -8,7 +8,7 @@
 ### Step 7 完了時点のディレクトリ構造
 
 ```text
-learn-aiagent/aiagent-and-mcp/
+aiagent-handson/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -65,7 +65,7 @@ learn-aiagent/aiagent-and-mcp/
 ### 1. ディレクトリに移動
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 ```
 
 ### 2. `aiagent/config/` を作成し、健康キーワード辞書を置く
@@ -562,10 +562,10 @@ docker compose run --rm agent npm run dev -- "沖縄ってどんなところ？"
 ### 実装コミット（feat）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/aiagent/config/healthy_keywords.json \
-        learn-aiagent/aiagent-and-mcp/aiagent/config/excluded_keywords.json \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/healthy-filter.ts \
-        learn-aiagent/aiagent-and-mcp/aiagent/src/agent.ts
+git add aiagent/config/healthy_keywords.json \
+        aiagent/config/excluded_keywords.json \
+        aiagent/src/healthy-filter.ts \
+        aiagent/src/agent.ts
 
 git commit -m "feat: Step7 健康判定ロジック統合（5件 + 筋トレ観点コメント）"
 ```
@@ -573,8 +573,8 @@ git commit -m "feat: Step7 健康判定ロジック統合（5件 + 筋トレ観�
 ### 手順書コミット（docs）
 
 ```bash
-git add learn-aiagent/aiagent-and-mcp/procedure-docs/step-07-healthy-filter.md \
-        learn-aiagent/aiagent-and-mcp/dev-plan-v2.md
+git add procedure-docs/step-07-healthy-filter.md \
+        dev-plan-v2.md
 
 git commit -m "docs: Step7 手順書追加"
 ```
@@ -594,7 +594,7 @@ git commit -m "docs: Step7 手順書追加"
 **Terminal B**（別タブ）:
 
 ```bash
-cd learn-aiagent/aiagent-and-mcp
+cd aiagent-handson/
 tail -F logs/*.jsonl 2>/dev/null | jq -c 'select(.phase=="filter_applied")'
 ```
 
