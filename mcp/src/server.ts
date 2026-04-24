@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -15,8 +16,10 @@ import { log } from "./logger.ts";
 // MCP Resource として公開する グルメ検索API リファレンス
 // ファイル本体は Slack で配布し mcp/resources/gourmet-api.html に配置する運用
 const GOURMET_REFERENCE_URI = "file:///app/resources/gourmet-api.html";
+const MCP_SRC_DIR = path.dirname(fileURLToPath(import.meta.url));
 const GOURMET_REFERENCE_PATH = path.join(
-  process.cwd(),
+  MCP_SRC_DIR,
+  "..",
   "resources",
   "gourmet-api.html",
 );
